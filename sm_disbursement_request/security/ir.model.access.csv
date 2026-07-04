@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sm_disbursement_request_user,sm.disbursement.request user,model_sm_disbursement_request,sm_disbursement_request.group_sm_disbursement_user,1,1,1,0
+access_sm_disbursement_request_manager,sm.disbursement.request manager,model_sm_disbursement_request,sm_disbursement_request.group_sm_disbursement_manager,1,1,1,1
+access_sm_disbursement_request_line_user,sm.disbursement.request.line user,model_sm_disbursement_request_line,sm_disbursement_request.group_sm_disbursement_user,1,1,1,0
+access_sm_disbursement_request_line_manager,sm.disbursement.request.line manager,model_sm_disbursement_request_line,sm_disbursement_request.group_sm_disbursement_manager,1,1,1,1

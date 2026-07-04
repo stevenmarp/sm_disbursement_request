@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sm_disbursement_request_list" model="ir.ui.view">
+        <field name="name">sm.disbursement.request.list</field>
+        <field name="model">sm.disbursement.request</field>
+        <field name="arch" type="xml">
+            <list string="Disbursement Requests" decoration-info="state == 'submitted'" decoration-success="state in ('accounted', 'paid')" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="request_type"/>
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="amount_total" widget="monetary" sum="Total"/>
+                <field name="amount_residual" widget="monetary" sum="Residual"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sm_disbursement_request_form" model="ir.ui.view">
+        <field name="name">sm.disbursement.request.form</field>
+        <field name="model">sm.disbursement.request</field>
+        <field name="arch" type="xml">
+            <form string="Disbursement Request">
+                <header>
+                    <button name="action_submit" type="object" string="Submit" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'submitted'" groups="sm_disbursement_request.group_sm_disbursement_manager"/>
+                    <button name="action_create_journal_entry" type="object" string="Create Journal Entry" class="oe_highlight" invisible="state != 'approved'" groups="sm_disbursement_request.group_sm_disbursement_manager"/>
+                    <button name="action_mark_paid" type="object" string="Mark Paid" invisible="state != 'accounted'" groups="sm_disbursement_request.group_sm_disbursement_manager"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state not in ('submitted', 'approved')" groups="sm_disbursement_request.group_sm_disbursement_manager"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('paid', 'cancelled')" groups="sm_disbursement_request.group_sm_disbursement_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,accounted,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_move" type="object" class="oe_stat_button" icon="fa-book" invisible="move_count == 0">
+                            <field name="move_count" widget="statinfo" string="Journal Entry"/>
+                        </button>
+                        <button name="action_view_settlements" type="object" class="oe_stat_button" icon="fa-list" invisible="request_type != 'advance'">
+                            <field name="settlement_count" widget="statinfo" string="Settlements"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Paid" bg_color="text-bg-success" invisible="state != 'paid'"/>
+                    <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-danger" invisible="state != 'cancelled'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="request_type" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="due_date" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="department_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="journal_id" readonly="state != 'draft'"/>
+                            <field name="clearing_account_id" readonly="state != 'draft'"/>
+                            <field name="advance_id" invisible="request_type != 'settlement'" readonly="state != 'draft'"/>
+                            <field name="move_id" readonly="1" invisible="not move_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="amount_total" widget="monetary" readonly="1"/>
+                        </group>
+                        <group invisible="request_type != 'advance'">
+                            <field name="amount_settled" widget="monetary" readonly="1"/>
+                            <field name="amount_residual" widget="monetary" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines">
+                            <field name="line_ids" readonly="state not in ('draft', 'submitted')">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="account_id"/>
+                                    <field name="analytic_distribution" widget="analytic_distribution"/>
+                                    <field name="amount" widget="monetary" sum="Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" nolabel="1" readonly="state not in ('draft', 'submitted')"/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary" readonly="state not in ('draft', 'submitted')"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sm_disbursement_request_search" model="ir.ui.view">
+        <field name="name">sm.disbursement.request.search</field>
+        <field name="model">sm.disbursement.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="request_type"/>
+                <filter name="my_requests" string="My Requests" domain="[('user_id', '=', uid)]"/>
+                <filter name="to_approve" string="To Approve" domain="[('state', '=', 'submitted')]"/>
+                <filter name="accounted" string="Accounted" domain="[('state', '=', 'accounted')]"/>
+                <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Type" context="{'group_by': 'request_type'}"/>
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sm_disbursement_request" model="ir.actions.act_window">
+        <field name="name">All Disbursements</field>
+        <field name="res_model">sm.disbursement.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_sm_disbursement_request_search"/>
+    </record>
+
+    <record id="action_sm_disbursement_advance" model="ir.actions.act_window">
+        <field name="name">Employee Advances</field>
+        <field name="res_model">sm.disbursement.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('request_type', '=', 'advance')]</field>
+        <field name="context">{'default_request_type': 'advance'}</field>
+        <field name="search_view_id" ref="view_sm_disbursement_request_search"/>
+    </record>
+
+    <record id="action_sm_disbursement_reimbursement" model="ir.actions.act_window">
+        <field name="name">Reimbursements</field>
+        <field name="res_model">sm.disbursement.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('request_type', '=', 'reimbursement')]</field>
+        <field name="context">{'default_request_type': 'reimbursement'}</field>
+        <field name="search_view_id" ref="view_sm_disbursement_request_search"/>
+    </record>
+
+    <record id="action_sm_disbursement_settlement" model="ir.actions.act_window">
+        <field name="name">Advance Settlements</field>
+        <field name="res_model">sm.disbursement.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('request_type', '=', 'settlement')]</field>
+        <field name="context">{'default_request_type': 'settlement'}</field>
+        <field name="search_view_id" ref="view_sm_disbursement_request_search"/>
+    </record>
+</odoo>
