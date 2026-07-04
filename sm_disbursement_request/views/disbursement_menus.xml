@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_sm_disbursement_root" name="Disbursement" sequence="86" web_icon="sm_disbursement_request,static/description/icon.png" groups="sm_disbursement_request.group_sm_disbursement_user"/>
+    <menuitem id="menu_sm_disbursement_operations" name="Operations" parent="menu_sm_disbursement_root" sequence="10"/>
+    <menuitem id="menu_sm_disbursement_advance" name="Employee Advances" parent="menu_sm_disbursement_operations" action="action_sm_disbursement_advance" sequence="10"/>
+    <menuitem id="menu_sm_disbursement_reimbursement" name="Reimbursements" parent="menu_sm_disbursement_operations" action="action_sm_disbursement_reimbursement" sequence="20"/>
+    <menuitem id="menu_sm_disbursement_settlement" name="Advance Settlements" parent="menu_sm_disbursement_operations" action="action_sm_disbursement_settlement" sequence="30"/>
+    <menuitem id="menu_sm_disbursement_all" name="All Disbursements" parent="menu_sm_disbursement_operations" action="action_sm_disbursement_request" sequence="40" groups="sm_disbursement_request.group_sm_disbursement_manager"/>
+</odoo>
